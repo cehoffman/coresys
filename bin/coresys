@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path('../../lib', __FILE__)
+
+require 'coresys'
+
+case ARGV[0]
+when 'install'
+  Coresys.install(ARGV[1])
+when 'uninstall', 'remove'
+when 'link'
+  Coresys.link(ARGV[1])
+when 'unlink'
+  Coresys.unlink(ARGV[1])
+when 'cleanup'
+  # There is a repository of
+  linked = Coresys.linked.children.map(&:readlink)
+
+  Coresys.cellar.children.each do |entry|
+    next unless entry.directory?
+
+    versions = entry.children
+    if versions.size > 1
+      versions.reject! { |version| linked.include?(version) }
+      versions.each do |version|
+        info "Removing #{entry.basename}@#{version.basename}"
+        version.rmtree
+      end
+    end
+  end
+
+  Coresys.cache.children.each do |entry|
+    entry.unlink if entry.file?
+  end
+end
