@@ -68,6 +68,15 @@ module Coresys
       self.class.file_name
     end
 
+    def installed?
+      (Coresys.linked + name).exist?
+    end
+
+    def exact_version_installed?
+      link = Coresys.linked + name
+      link.exist? && link.realpath == prefix
+    end
+
     def etc; Coresys.base + 'etc' end
     def var; Coresys.base + 'var' end
 
