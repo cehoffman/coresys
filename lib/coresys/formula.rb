@@ -6,7 +6,7 @@ module Coresys
       end
 
       def find(formula)
-        require File.expand_path("../../../formula/#{formula}.rb", __FILE__)
+        require Coresys.formula + "#{formula}.rb"
         @subclasses[formula.camelcase.downcase].tap do |f|
           f.file_name = formula.downcase
         end
