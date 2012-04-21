@@ -23,7 +23,7 @@ module Coresys
     def link
       linked? && warn("Relinking #{tag}") || info("Linking #{tag}")
       count = PATHS.map { |path| link_path(path) }.sum
-      info "Created #{count} symlinks"
+      info "Created #{count} symlink#{'s' if count > 1}"
       record.unlink if record.exist?
       File.symlink(@formula.prefix, record)
     end
@@ -31,7 +31,7 @@ module Coresys
     def unlink
       info "Unlinking #{tag}"
       count = PATHS.map { |path| unlink_path(path) }.sum
-      info "Removed #{count} symlinks"
+      info "Removed #{count} symlink#{'s' if count > 1}"
       record.unlink if record.exist?
     end
 
