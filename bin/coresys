@@ -8,10 +8,13 @@ case ARGV[0]
 when 'install'
   Coresys.install(ARGV[1])
 when 'uninstall', 'remove'
+  Coresys.uninstall(ARGV[1])
 when 'link'
   Coresys.link(ARGV[1])
 when 'unlink'
   Coresys.unlink(ARGV[1])
+when 'upgrade'
+  Coresys.upgrade(ARGV[1])
 when 'cleanup'
   # There is a repository of
   linked = Coresys.linked.children.map(&:readlink)

@@ -10,18 +10,33 @@ module Coresys
 
   class << self
     def install(name)
-      formula = Formula.find(name).new
-      Installer.new(formula).install
-      link(formula)
+      Installer.new(Formula.find(name).new).install
+    end
+
+    def uninstall(name)
+      formula = Coresys::Formula.find(name).new
+      error!("#{formula.name} is not installed") unless formula.installed?
+      linked = (Coresys.linked + formula.name).realpath
+      Linker.new(formula.name, linked.basename, linked).unlink
+      info "Removing #{formula.name}@#{linked.basename}"
+      linked.rmtree
+    end
+
+    def upgrade(name)
+      formula = Coresys::Formula.find(name).new
+      error!("#{formula.name} is already at latest") if formula.exact_version_installed?
+      uninstall(formula.name)
+      install(formula.name)
     end
 
     def link(name)
-      formula = name.is_a?(Formula) && name || Formula.find(name).new
-      Linker.new(formula).link
+      formula = Formula.find(name).new
+      Linker.new(formula.name, formula.version, formula.prefix).link
     end
 
     def unlink(name)
-      Linker.new(Formula.find(name).new).unlink
+      formula = Formula.find(name).new
+      Linker.new(formula.name, formula.version, formula.prefix).unlink
     end
 
     def base

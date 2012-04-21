@@ -4,11 +4,11 @@ module Coresys
       @formula = formula
       @downloader = DownloadStrategy.guess(formula)
 
-      if @formula.prefix.exist?
-        if ARGV.include? '--force'
+      if @formula.installed?
+        if @formula.exact_version_installed? && ARGV.include?('--force')
           @formula.prefix.rmtree
         else
-          error!("#{@formula.name}@#{@formula.version} already installed")
+          error!("#{@formula.name}@#{(Coresys.linked + @formula.name).realpath.basename} already installed")
         end
       end
     end
@@ -34,6 +34,8 @@ module Coresys
           ENV.replace oENV
         end
       end
+
+      link
     rescue Interrupt => e
       puts
       info 'Got interrupt'
@@ -50,6 +52,10 @@ module Coresys
         FileUtils.rm_rf dir, secure: true if File.directory?(dir) 
         Dir.chdir origin
       end
+    end
+
+    def link
+      Linker.new(@formula.name, @formula.version, @formula.prefix).link
     end
   end
 end

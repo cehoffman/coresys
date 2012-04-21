@@ -4,20 +4,20 @@ module Coresys
   class Linker
     PATHS = ['etc', 'bin', 'sbin', 'include', 'share', 'lib']
 
-    def initialize(formula)
-      @formula = formula
+    def initialize(name, version, prefix)
+      @name, @version, @prefix = name, version, prefix
     end
 
     def tag
-      "#{@formula.name}@#{@formula.version}"
+      "#@name@#@version"
     end
 
     def record
-      @record ||= Coresys.linked! + tag.tr('@', '-')
+      @record ||= Coresys.linked! + @name
     end
 
     def linked?
-      record.symlink? && record.readlink == @formula.prefix
+      record.symlink? && record.readlink == @prefix
     end
 
     def link
@@ -25,7 +25,7 @@ module Coresys
       count = PATHS.map { |path| link_path(path) }.sum
       info "Created #{count} symlink#{'s' if count > 1}"
       record.unlink if record.exist?
-      File.symlink(@formula.prefix, record)
+      File.symlink(@prefix, record)
     end
 
     def unlink
@@ -36,7 +36,7 @@ module Coresys
     end
 
     def link_path(source)
-      source = @formula.prefix + source
+      source = @prefix + source
       return 0 unless source.exist?
 
       count = 0
@@ -44,7 +44,7 @@ module Coresys
       Find.find(source) do |path|
         next if path == source
         path = Pathname.new(path)
-        partial_path = path.relative_path_from(@formula.prefix)
+        partial_path = path.relative_path_from(@prefix)
         dest = Coresys.base + partial_path
 
         if File.file?(path) && path.basename != '.DS_Store'
@@ -66,14 +66,14 @@ module Coresys
     end
 
     def unlink_path(source)
-      source = @formula.prefix + source
+      source = @prefix + source
       return 0 unless source.exist?
 
       count = 0
       Find.find(source) do |path|
         next if path == source
         path = Pathname.new(path)
-        partial_path = path.relative_path_from(@formula.prefix)
+        partial_path = path.relative_path_from(@prefix)
         dest = Coresys.base + partial_path
 
         # Skip if dest isn't there
