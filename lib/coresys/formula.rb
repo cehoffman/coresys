@@ -12,6 +12,14 @@ module Coresys
         end
       end
 
+      def devel(&block)
+        instance_eval(&block) if block && ARGV.include?('--devel')
+      end
+
+      def stable(&block)
+        instance_eval(&block) if block && !ARGV.include?('--devel')
+      end
+
       def homepage(val = nil)
         return @homepage if val.nil?
         @homepage = nil
