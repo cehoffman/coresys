@@ -36,7 +36,7 @@ module Coresys
       def version(val = nil)
         return @version = val if val
         @version || url[/((?:\d+\.?)+)\.(\w+\.?)+$/, 1] ||
-          (url_opts && url_opts.fetch(:tag))
+          (url_opts && (url_opts.fetch(:tag) || url_opts.fetch(:branch) || url_opts.fetch(:sha)))
       end
 
       def digest(type = nil, sum = nil)
