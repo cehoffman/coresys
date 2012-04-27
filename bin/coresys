@@ -5,6 +5,11 @@ $:.unshift File.expand_path('../../lib', File.realpath(__FILE__))
 require 'coresys'
 
 case ARGV.shift
+when 'edit'
+  formula = Coresys::Formula.find(ARGV[0])
+  error!("EDITOR environment variable is not set") unless ENV['EDITOR']
+  file = (Coresys.formula + formula.file_name).to_s + '.rb'
+  exec ENV['SHELL'], '-c', ENV['EDITOR'] + ' "$@"', '--', file
 when 'install'
   Coresys.install(ARGV[0])
 when 'uninstall', 'remove'
