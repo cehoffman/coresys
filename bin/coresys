@@ -30,4 +30,17 @@ when 'cleanup'
   Coresys.cache.children.each do |entry|
     entry.unlink if entry.file?
   end if ARGV.empty?
+when 'outdated'
+  outdated = Coresys.cellar.children.select do |entry|
+    formula = Coresys::Formula.find_or_stub(entry.basename)
+    entry.children.map(&:basename).any? { |f| f == formula.version }
+  end.map(&:basename)
+
+  if outdated.size > 0
+    info "Outdated formula"
+    columns = %x[stty size].split.last
+    IO.popen(['column', '-c', columns], 'w') { |io| io.puts outdated }
+  else
+    puts "No outdated formula"
+  end
 end
