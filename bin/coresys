@@ -4,35 +4,25 @@ $:.unshift File.expand_path('../../lib', File.realpath(__FILE__))
 
 require 'coresys'
 
-case ARGV[0]
+case ARGV.shift
 when 'install'
-  Coresys.install(ARGV[1])
+  Coresys.install(ARGV[0])
 when 'uninstall', 'remove'
-  Coresys.uninstall(ARGV[1])
+  Coresys.uninstall(ARGV[0])
 when 'link'
-  Coresys.link(ARGV[1])
+  Coresys.link(ARGV[0])
 when 'unlink'
-  Coresys.unlink(ARGV[1])
+  Coresys.unlink(ARGV[0])
 when 'upgrade'
-  Coresys.upgrade(ARGV[1])
+  Coresys.upgrade(ARGV[0])
 when 'cleanup'
-  # There is a repository of
-  linked = Coresys.linked.children.map(&:readlink)
-
   Coresys.cellar.children.each do |entry|
     next unless entry.directory?
-
-    versions = entry.children
-    if versions.size > 1
-      versions.reject! { |version| linked.include?(version) }
-      versions.each do |version|
-        info "Removing #{entry.basename}@#{version.basename}"
-        version.rmtree
-      end
-    end
+    Coresys.cleanup(entry.basename)
   end
 
+  # Only cleanup cache when this is a general cleanup
   Coresys.cache.children.each do |entry|
     entry.unlink if entry.file?
-  end
+  end if ARGV.empty?
 end

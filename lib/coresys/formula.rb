@@ -1,15 +1,45 @@
 module Coresys
   class Formula
+    @subclasses = Hash.new do |h, k|
+      require Coresys.formula + "#{k}.rb"
+      h[k.tr('_-', '')].file_name = k
+      h[k] = h[k.tr('_-', '')]
+    end
+
     class << self
       def inherited(klass)
-        (@subclasses ||= {})[klass.name.split('::').last.downcase] = klass
+        @subclasses[klass.name.split('::').last.downcase] = klass
       end
 
       def find(formula)
-        require Coresys.formula + "#{formula}.rb"
-        @subclasses[formula.camelcase.downcase].tap do |f|
-          f.file_name = formula.downcase
+        @subclasses[formula.to_s.downcase]
+      rescue LoadError => e
+        error!("#{formula} does not have a formula")
+      end
+
+      def find_or_stub(formula)
+        file_name = formula.to_s.downcase
+        @subclasses[file_name]
+      rescue LoadError => e
+        name = formula.to_s.camelcase.capitalize
+
+        # Stub the formula to be the most reacently
+        # installed version if there are installed versions
+        version = 'NONE'
+        root = Coresys.cellar + file_name
+        if root.exist?
+          last = root.children.sort_by(&:ctime).last
+          version = last.basename if last
         end
+
+        klass = eval <<-RUBY
+          class #{name.capitalize} < Coresys::Formula
+            version #{version.to_s.inspect}
+            self
+          end
+        RUBY
+        klass.file_name = file_name
+        @subclasses[file_name] = klass
       end
 
       def devel(&block)
@@ -35,7 +65,8 @@ module Coresys
 
       def version(val = nil)
         return @version = val if val
-        @version || url[/((?:\d+\.?)+)\.(\w+\.?)+$/, 1] ||
+        @version ||
+          (url && url[/((?:\d+\.?)+)\.(\w+\.?)+$/, 1]) ||
           (url_opts && (url_opts.fetch(:tag) || url_opts.fetch(:branch) || url_opts.fetch(:sha)))
       end
 
@@ -68,19 +99,28 @@ module Coresys
       self.class.file_name
     end
 
-    def installed?
+    def linked?
       (Coresys.linked + name).exist?
     end
 
-    def exact_version_installed?
+    def exact_version_linked?
       link = Coresys.linked + name
       link.exist? && link.realpath == prefix
+    end
+
+    def installed?
+      root.children.size > 0
+    end
+
+    def exact_version_installed?
+      prefix.exist?
     end
 
     def etc; Coresys.base + 'etc' end
     def var; Coresys.base + 'var' end
 
-    def prefix; Coresys.cellar + name + version end
+    def root;    Coresys.cellar + name end
+    def prefix;  root + version     end
     def bin;     prefix + 'bin'     end
     def include; prefix + 'include' end
     def lib;     prefix + 'lib'     end

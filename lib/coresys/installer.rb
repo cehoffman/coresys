@@ -4,8 +4,8 @@ module Coresys
       @formula = formula
       @downloader = DownloadStrategy.guess(formula)
 
-      if @formula.installed?
-        if @formula.exact_version_installed? && ARGV.include?('--force')
+      if @formula.linked?
+        if @formula.exact_version_linked? && ARGV.include?('--force')
           @formula.prefix.rmtree
         else
           error!("#{@formula.name}@#{(Coresys.linked + @formula.name).realpath.basename} already installed")
