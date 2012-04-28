@@ -21,17 +21,17 @@ module Coresys
     end
 
     def link
-      linked? && warn("Relinking #{tag}") || info("Linking #{tag}")
+      info("Linking #{tag}... ", newline: false)
       count = PATHS.map { |path| link_path(path) }.sum
-      info "Created #{count} symlink#{'s' if count > 1}"
+      info "created #{count} symlink#{'s' if count > 1}", level: false
       record.unlink if record.exist?
       File.symlink(@prefix, record)
     end
 
     def unlink
-      info "Unlinking #{tag}"
+      info "Unlinking #{tag}... ", newline: false
       count = PATHS.map { |path| unlink_path(path) }.sum
-      info "Removed #{count} symlink#{'s' if count > 1}"
+      info "removed #{count} symlink#{'s' if count > 1}", level: false
       record.unlink if record.exist?
     end
 
