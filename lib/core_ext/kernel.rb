@@ -47,6 +47,11 @@ module Kernel
     exit 1
   end
 
+  def columned(title, items)
+    section title
+    IO.popen(['column', '-c', Tty.width.to_s], 'w') { |io| io.puts items }
+  end
+
   # This impementation of system aborts on failure
   # and does not swallow ^C to allow for graceful exit
   def safe_system(cmd, *args)
@@ -85,7 +90,7 @@ module Tty extend self
   def none; '' end
 
   def width
-    @width = %x[stty size].split.last.to_i
+    @width ||= %x[stty size].split.last.to_i
   end
 
   private
