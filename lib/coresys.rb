@@ -19,6 +19,8 @@ module Coresys
       formula = Formula.find_or_stub(name).new
       error!("#{formula.name} is not installed") unless formula.installed?
 
+      section_start "Uninstalling #{formula.name}"
+
       if formula.linked?
         linked = (Coresys.linked + formula.name).realpath
         Linker.new(formula.name, linked.basename, linked).unlink
@@ -28,6 +30,8 @@ module Coresys
         info "Removing #{formula.name}@#{version.basename}"
         version.rmtree
       end
+
+      section_end
     end
 
     # First verify the given forumla has been built and exists
@@ -45,10 +49,12 @@ module Coresys
 
       if versions.size > 1
         versions.reject! { |version| version == linked}
+        section_start "Cleaning #{formula.name}" if versions.size > 0
         versions.each do |version|
           info "Removing #{formula.name}@#{version.basename}"
           version.rmtree
         end
+        section_end if versions.size > 0
       end
     end
 
@@ -64,6 +70,7 @@ module Coresys
       Linker.new(formula.name, linked.basename, linked).unlink
 
       begin
+        section_start "Upgrading #{formula.name}"
         install(formula.name)
       rescue Exception => e
         # Make sure to put links back on error
@@ -71,6 +78,7 @@ module Coresys
       end
 
       cleanup(formula.name)
+      section_end
     end
 
     def link(name)
