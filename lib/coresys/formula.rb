@@ -66,7 +66,7 @@ module Coresys
       def version(val = nil)
         return @version = val if val
         @version ||
-          (url && url[/((?:\d+\.?)+)\.(\w+\.?)+$/, 1]) ||
+          (url && url[/((?:\d+\.?)+)(\.(\w+\.?)+)?$/, 1]) ||
           (url_opts && (url_opts.fetch(:tag) || url_opts.fetch(:branch) || url_opts.fetch(:sha)))
       end
 
@@ -93,7 +93,7 @@ module Coresys
       end
     end
 
-    delegate :url, :url_opts, :version, :digest
+    delegate :url, :url_opts, :version, :digest, :homepage
 
     def name
       self.class.file_name
