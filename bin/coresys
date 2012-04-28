@@ -30,6 +30,27 @@ when 'cleanup'
   Coresys.cache.children.each do |entry|
     entry.unlink if entry.file?
   end if ARGV.empty?
+when 'info'
+  formula = Coresys::Formula.find(ARGV[0]).new
+  puts "#{formula.name} #{formula.version}"
+  puts formula.homepage if formula.homepage
+
+  if formula.installed?
+    print "Installed Versions: "
+    formula.root.children.each do |entry|
+      next unless entry.directory?
+      print Tty.green if entry.basename == formula.version
+      print entry.basename
+      print Tty.reset
+      print ' '
+    end
+    puts
+  end
+
+  if formula.linked?
+    linked = (Coresys.linked + formula.name).realpath
+    puts "#{linked} (#{linked.summary})"
+  end
 when 'outdated'
   outdated = Coresys.cellar.children.select do |entry|
     formula = Coresys::Formula.find_or_stub(entry.basename)
@@ -37,7 +58,7 @@ when 'outdated'
   end.map(&:basename)
 
   if outdated.size > 0
-    info "Outdated formula"
+    section "Outdated formula"
     columns = %x[stty size].split.last
     IO.popen(['column', '-c', columns], 'w') { |io| io.puts outdated }
   else
