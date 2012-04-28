@@ -36,13 +36,13 @@ when 'info'
   puts formula.homepage if formula.homepage
 
   if formula.installed?
-    print "Installed Versions: "
+    print "Available Versions: "
+    active = formula.linked? && (Coresys.linked + formula.name).realpath.basename || formula.version
     formula.root.children.each do |entry|
       next unless entry.directory?
-      print Tty.green if entry.basename == formula.version
-      print entry.basename
-      print Tty.reset
-      print ' '
+      output = entry.basename
+      output = "#{Tty.green}#{output}*#{Tty.reset}" if entry.basename == active
+      print output, ' '
     end
     puts
   end
