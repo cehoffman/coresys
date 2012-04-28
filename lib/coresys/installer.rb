@@ -17,6 +17,8 @@ module Coresys
     end
 
     def install
+      start = Time.now
+      section_start "Installing #{@formula.name}@#{@formula.version}"
       @downloader.fetch
       @downloader.verify
 
@@ -36,9 +38,13 @@ module Coresys
       end
 
       link
+
+      duration = Time.now - start
+      type = ['seconds', 'minutes', 'hours'].detect { (duration /= 60) < 1 }
+      section_end "Installed #{@formula.prefix.abrev}: #{@formula.prefix.summary}, built in %0.1f #{type}" % [duration * 60]
     rescue Interrupt => e
       puts
-      info 'Got interrupt'
+      info 'Aborting install'
     end
 
     def mktemp

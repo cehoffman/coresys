@@ -1,10 +1,39 @@
 module Kernel
-  def info(msg)
-    puts "#{Tty.blue}==>#{Tty.white} #{msg}#{Tty.reset}"
+  @@level = -1
+
+  def level_pointer
+    return '==>' if @@level < 0
+    (' ' * @@level) + ('=' * (2 - @@level)) + '>'
   end
 
-  def warn(msg)
-    puts "#{Tty.red}Warrning#{Tty.reset}: #{msg}"
+  def section_start(*args)
+    @@level += 1
+    section(*args)
+  end
+
+  def section_end(*args)
+    args = ['', {level: false, newline: false}] if args.empty?
+    section(*args)
+    @@level -= 1
+  end
+
+  def opt_line(line, options)
+    line = "#{Tty.send(options.fetch(:text, 'none'))}#{line}#{Tty.reset}"
+    line = "#{Tty.send(options[:level])}#{level_pointer}#{Tty.reset} #{line}" if options.fetch(:level, false)
+    line = line + $/ if options.fetch(:newline, true)
+    print line
+  end
+
+  def section(name, options = {})
+    opt_line name, {level: 'green', text: 'white'}.merge(options)
+  end
+
+  def info(msg, options = {})
+    opt_line msg, {level: 'blue'}.merge(options)
+  end
+
+  def warn(msg, newline = $/)
+    opt_line "#{Tty.red}Warning#{Tty.reset}: #{msg}", {level: 'red'}.merge(options)
   end
 
   def error(msg)
@@ -44,32 +73,32 @@ module Kernel
   end
 end
 
-class Tty
-  class <<self
-    def blue; bold 34; end
-    def white; bold 39; end
-    def red; underline 31; end
-    def yellow; underline 33 ; end
-    def reset; escape 0; end
-    def em; underline 39; end
-    def green; color 92 end
+# This was taken from Homebrew directly
+module Tty extend self
+  def blue; bold 34; end
+  def white; bold 39; end
+  def red; underline 31; end
+  def yellow; underline 33 ; end
+  def reset; escape 0; end
+  def em; underline 39; end
+  def green; color 83 end
+  def none; '' end
 
-    def width
-      `/usr/bin/tput cols`.strip.to_i
-    end
+  def width
+    @width = %x[stty size].split.last.to_i
+  end
 
   private
-    def color n
-      escape "0;#{n}"
-    end
-    def bold n
-      escape "1;#{n}"
-    end
-    def underline n
-      escape "4;#{n}"
-    end
-    def escape n
-      "\033[#{n}m" if $stdout.tty?
-    end
+  def color n
+    escape "0;#{n}"
+  end
+  def bold n
+    escape "1;#{n}"
+  end
+  def underline n
+    escape "4;#{n}"
+  end
+  def escape n
+    "\033[#{n}m" if $stdout.tty?
   end
 end
