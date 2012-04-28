@@ -70,6 +70,16 @@ module Kernel
     end
   end
 
+  def captured_system(*args)
+    rd, wr = IO.pipe
+    safe_system(*args) do
+      $stdout.reopen wr
+      $stderr.reopen wr
+    end
+    wr.close
+    rd.read
+  end
+
   def silent_system(*args)
     safe_system(*args) do
       $stdout.reopen('/dev/null')
