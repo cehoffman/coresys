@@ -75,9 +75,7 @@ when 'outdated'
   end.map(&:basename)
 
   if outdated.size > 0
-    section "Outdated formula"
-    columns = %x[stty size].split.last
-    IO.popen(['column', '-c', columns], 'w') { |io| io.puts outdated }
+    columned "Outdated formula", outdated
   else
     puts "No outdated formula"
   end
