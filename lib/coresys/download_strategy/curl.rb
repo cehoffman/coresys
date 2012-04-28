@@ -3,8 +3,8 @@ module Coresys
     class Curl < Archive
       def fetch
         info "Downloading #{@formula.url}"
-        return info('Already downloaded, using cache') if File.exists?(cached_path)
-        system 'curl', @formula.url, '-Lo', cached_path
+        return info("Already downloaded: #{cached_path}") if File.exists?(cached_path)
+        system 'curl', @formula.url, '--progress-bar', '-Lo', cached_path
       end
 
       def stage
