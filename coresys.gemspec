@@ -4,8 +4,8 @@ require File.expand_path('../lib/coresys/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Chris Hoffman"]
   gem.email         = ["cehoffman@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{General purpose user level package management}
+  gem.summary       = %q{General prupose user level package management}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
