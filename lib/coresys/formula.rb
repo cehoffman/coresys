@@ -96,7 +96,7 @@ module Coresys
     delegate :url, :url_opts, :version, :digest, :homepage
 
     def name
-      self.class.file_name
+      self.class.file_name || self.class.name.underscore
     end
 
     def linked?
