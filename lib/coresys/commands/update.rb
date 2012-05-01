@@ -1,7 +1,3 @@
-#!/usr/bin/env ruby
-
-require 'coresys'
-
 Dir.chdir Coresys.formula do
   silent_system 'git', 'pull', '--rebase', 'origin', 'refs/heads/master:refs/remotes/origin/master'
   diff = captured_system('git', 'diff-tree', '-r', '--minimal', '--no-color', '--name-status', '--diff-filter=ADMR', 'HEAD@{1}', 'HEAD')

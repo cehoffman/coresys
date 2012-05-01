@@ -1,7 +1,3 @@
-#!/usr/bin/env ruby
-
-require 'coresys'
-
 Coresys.cellar.children.each do |entry|
   next unless entry.directory?
   Coresys.cleanup(entry.basename)

@@ -1,7 +1,6 @@
-#!/usr/bin/env ruby
 # commands: list all the available commands with a short description
 
-cmd = /^coresys-(.+)/
+cmd = /^coresys-(.+)|#{File.join(File.dirname(__FILE__), '')}(.+)\.rb/
 cmds = []
 
 (ENV['PATH'].split(File::PATH_SEPARATOR) << File.dirname(__FILE__)).each do |path|

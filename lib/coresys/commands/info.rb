@@ -1,7 +1,3 @@
-#!/usr/bin/env ruby
-
-require 'coresys'
-
 formula = Coresys::Formula.find(ARGV[0]).new
 puts "#{formula.name} #{formula.version}"
 puts formula.homepage if formula.homepage
