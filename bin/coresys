@@ -2,18 +2,19 @@
 
 subcmd = ARGV.shift
 begin
-  $:.unshift File.expand_path('../../lib', File.realpath(__FILE__))
-  path = File.expand_path("../../lib/coresys/commands/#{subcmd}", __FILE__)
+  here = File.realpath(__FILE__)
+  $:.unshift File.expand_path('../../lib', here)
+  path = File.expand_path("../../lib/coresys/commands/#{subcmd}.rb", here)
 
   if File.exists?(path)
     require 'coresys'
     require path
   else
-    ENV['RUBYOPT'] = "#{ENV['RUBYOPT']} -I #{File.expand_path('../../lib', File.realpath(__FILE__))}"
+    ENV['RUBYOPT'] = "#{ENV['RUBYOPT']} -I #{File.expand_path('../../lib', here)}"
     exec "#{File.basename(__FILE__)}-#{subcmd}", *ARGV
   end
 rescue Exception => e
   puts "No command '#{subcmd}' found"
-  p e if ARGV.include?('--debug')
+  (p(e); puts e.backtrace) if ARGV.include?('--debug')
   exit 1
 end
