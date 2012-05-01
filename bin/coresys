@@ -1,82 +1,14 @@
 #!/usr/bin/env ruby
 
-$:.unshift File.expand_path('../../lib', File.realpath(__FILE__))
-
-require 'coresys'
-
-case ARGV.shift
-when 'edit'
-  formula = Coresys::Formula.find(ARGV[0])
-  error!("EDITOR environment variable is not set") unless ENV['EDITOR']
-  file = (Coresys.formula + formula.file_name).to_s + '.rb'
-  exec ENV['SHELL'], '-c', ENV['EDITOR'] + ' "$@"', '--', file
-when 'update'
-  Dir.chdir Coresys.formula do
-    silent_system 'git', 'pull', '--rebase', 'origin', 'refs/heads/master:refs/remotes/origin/master'
-    diff = captured_system('git', 'diff-tree', '-r', '--minimal', '--no-color', '--name-status', '--diff-filter=ADMR', 'HEAD@{1}', 'HEAD')
-
-    diff.lines.map(&:split).group_by(&:first).each do |type, changed|
-      title = case type
-      when 'A' then 'Added'
-      when 'D' then 'Deleted'
-      when 'M' then 'Updated'
-      when 'R' then 'Renamed'
-      end + ' formula'
-
-      changed.map! { |formula| formula.last.sub(/\.rb$/, '') }
-      columned title, changed
-    end
-  end
-when 'install'
-  Coresys.install(ARGV[0])
-when 'uninstall', 'remove'
-  Coresys.uninstall(ARGV[0])
-when 'link'
-  Coresys.link(ARGV[0])
-when 'unlink'
-  Coresys.unlink(ARGV[0])
-when 'upgrade'
-  Coresys.upgrade(ARGV[0])
-when 'cleanup'
-  Coresys.cellar.children.each do |entry|
-    next unless entry.directory?
-    Coresys.cleanup(entry.basename)
-  end
-
-  # Only cleanup cache when this is a general cleanup
-  Coresys.cache.children.each do |entry|
-    entry.unlink if entry.file?
-  end if ARGV.empty?
-when 'info'
-  formula = Coresys::Formula.find(ARGV[0]).new
-  puts "#{formula.name} #{formula.version}"
-  puts formula.homepage if formula.homepage
-
-  if formula.installed?
-    print "Available Versions: "
-    active = formula.linked? && (Coresys.linked + formula.name).realpath.basename || formula.version
-    formula.root.children.each do |entry|
-      next unless entry.directory?
-      output = entry.basename
-      output = "#{Tty.green}#{output}*#{Tty.reset}" if entry.basename == active
-      print output, ' '
-    end
-    puts
-  end
-
-  if formula.linked?
-    linked = (Coresys.linked + formula.name).realpath
-    puts "#{linked} (#{linked.summary})"
-  end
-when 'outdated'
-  outdated = Coresys.cellar.children.select do |entry|
-    formula = Coresys::Formula.find_or_stub(entry.basename)
-    entry.children.map(&:basename).any? { |f| f == formula.version }
-  end.map(&:basename)
-
-  if outdated.size > 0
-    columned "Outdated formula", outdated
-  else
-    puts "No outdated formula"
-  end
+subcmd = ARGV.shift
+begin
+  exec "#{File.basename(__FILE__)}-#{subcmd}", *ARGV rescue nil
+  ENV['RUBYOPT'] = "#{ENV['RUBYOPT']} -I #{File.expand_path('../../lib', File.realpath(__FILE__))}"
+  exec File.expand_path("../coresys-#{subcmd}", File.realpath(__FILE__)), *ARGV
+rescue Errno::ENOENT
+  puts "No command '#{subcmd}' found"
+  exit 1
+rescue Exception => e
+  p e
+  exit 1
 end
