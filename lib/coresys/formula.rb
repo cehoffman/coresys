@@ -138,6 +138,12 @@ module Coresys
     def man6;    man + 'man6'       end
     def man7;    man + 'man7'       end
     def man8;    man + 'man8'       end
+    def bash_completion; prefix + 'etc/bash_completion.d' end
+    def zsh_completion; share + 'zsh/site-functions' end
+
+    def cd(*args, &block)
+      Dir.chdir(*args, &block)
+    end
 
     def system(*args)
       Kernel.info args.join(' ')
@@ -152,6 +158,10 @@ module Coresys
     def install(&block)
       error!('block required when installing from formula') unless block
       Installer.new(self).install(&block)
+    end
+
+    def link
+      Linker.new(name, version, prefix).link
     end
   end
 end

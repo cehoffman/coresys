@@ -4,11 +4,11 @@ module Coresys
       @formula = formula
       @downloader = DownloadStrategy.guess(formula)
 
-      if @formula.linked?
-        if @formula.exact_version_linked? && ARGV.include?('--force')
+      if @formula.prefix.exist?
+        if ARGV.include?('--force')
           @formula.prefix.rmtree
         else
-          error!("#{@formula.name}@#{(Coresys.linked + @formula.name).realpath.basename} already installed")
+          error!("#{@formula.name}@#{@formula.version} already installed")
         end
       end
     end
@@ -37,11 +37,10 @@ module Coresys
         end
       end
 
-      link
-
       duration = Time.now - start
       type = ['seconds', 'minutes', 'hours'].detect { (duration /= 60) < 1 }
-      section_end "Installed #{@formula.prefix.abrev}: #{@formula.prefix.summary}, built in %0.1f #{type}" % [duration * 60]
+      summary = @formula.prefix.exist? && @formula.prefix.summary + ', ' || ''
+      section_end "Installed #{@formula.name}@#{@formula.version}: #{@summary}built in %0.1f #{type}" % [duration * 60]
     rescue Interrupt => e
       puts
       info 'Aborting install'
@@ -58,10 +57,6 @@ module Coresys
         FileUtils.rm_rf dir, secure: true if File.directory?(dir) 
         Dir.chdir origin
       end
-    end
-
-    def link
-      Linker.new(@formula.name, @formula.version, @formula.prefix).link
     end
   end
 end

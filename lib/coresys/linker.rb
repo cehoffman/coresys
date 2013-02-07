@@ -21,6 +21,8 @@ module Coresys
     end
 
     def link
+      error!("#@name@#@version already linked") if linked?
+
       info("Linking #{tag}... ", newline: false)
       count = PATHS.map { |path| link_path(path) }.sum
       info "created #{count} symlink#{'s' if count > 1}", level: false

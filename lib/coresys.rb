@@ -10,7 +10,9 @@ module Coresys
 
   class << self
     def install(name)
-      Installer.new(Formula.find(name).new).install
+      formula = Formula.find(name).new
+      Installer.new(formula).install
+      Linker.new(formula.name, formula.version, formula.prefix).link
     end
 
     # Uninstall removes all the installed versions of the formula
@@ -72,6 +74,7 @@ module Coresys
       begin
         section_start "Upgrading #{formula.name}"
         install(formula.name)
+        Linker.new(formula.name, formula.version, formula.prefix).link
       rescue Exception => e
         # Make sure to put links back on error
         Linker.new(formula.name, linked.basename, linked).link
