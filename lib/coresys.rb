@@ -85,7 +85,7 @@ module Coresys
     end
 
     def link(name)
-      formula = Formula.find_or_stub(name).new
+      formula = Formula.find_or_stub(*name.split('@', 2)).new
       error!("#{formula.name} is not installed") unless formula.installed?
       error!("#{formula.name} is already linked") if formula.exact_version_linked? && !ARGV.include?('--force')
 
@@ -97,7 +97,7 @@ module Coresys
     end
 
     def unlink(name)
-      formula = Formula.find_or_stub(name).new
+      formula = Formula.find_or_stub(*name.split('@', 2)).new
       error!("#{formula.name} is not linked") unless formula.linked?
       linked = (Cellar.linked + formula.name).realpath 
       Linker.new(formula.name, linked.basename, linked).unlink

@@ -17,7 +17,7 @@ module Coresys
         error!("#{formula} does not have a formula")
       end
 
-      def find_or_stub(formula)
+      def find_or_stub(formula, version = nil)
         file_name = formula.to_s.downcase
         @subclasses[file_name]
       rescue LoadError => e
@@ -25,9 +25,8 @@ module Coresys
 
         # Stub the formula to be the most reacently
         # installed version if there are installed versions
-        version = 'NONE'
         root = Coresys.cellar + file_name
-        if root.exist?
+        if !version && root.exist?
           last = root.children.sort_by(&:ctime).last
           version = last.basename if last
         end
