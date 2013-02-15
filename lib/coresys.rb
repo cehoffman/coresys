@@ -67,21 +67,23 @@ module Coresys
       formula = Formula.find(name).new
       error!("#{formula.name} is already at latest") if formula.exact_version_installed?
 
+      section_start "Upgrading #{formula.name} from #{linked.basename} to #{formula.version}"
+
       # Unlink current version before installing
       linked = (Coresys.linked + formula.name).realpath
       Linker.new(formula.name, linked.basename, linked).unlink
 
       begin
-        section_start "Upgrading #{formula.name}"
         install(formula.name)
         Linker.new(formula.name, formula.version, formula.prefix).link
+        cleanup(formula.name)
+        section_end
       rescue Exception => e
         # Make sure to put links back on error
+        puts e.message, e.backtrace if ARGV.include?("--debug")
         Linker.new(formula.name, linked.basename, linked).link
+        section_end "Failed to install #{formula.name}@#{formula.version}"
       end
-
-      cleanup(formula.name)
-      section_end
     end
 
     def link(name)
