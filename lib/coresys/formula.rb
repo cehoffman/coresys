@@ -81,6 +81,11 @@ module Coresys
         @url && @digest_type && @digest_sum
       end
 
+      def option(opt, desc)
+        @options ||= {}
+        @options[opt] = desc
+      end
+
       def delegate(*methods)
         methods.each do |method|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
@@ -161,6 +166,28 @@ module Coresys
 
     def link
       Linker.new(name, version, prefix).link
+    end
+
+    def inreplace(file, var = nil, value = nil)
+      if !File.exists?(file)
+        raise StandardError, "Unable to inreplace #{file}: does not exist"
+      end
+
+      replacement = ''
+      open(file, 'rb') do |data|
+        replacement = data.read
+        if block_given?
+          def replacement.[]=(key, value)
+            gsub!(/^\s*?#{key}=.*$/, "#{key}=#{value}")
+          end
+
+          yield replacement
+        else
+          replacement.gsub!(var, value)
+        end
+      end
+
+      open(file, 'wb') { |f| f.write replacement }
     end
   end
 end
