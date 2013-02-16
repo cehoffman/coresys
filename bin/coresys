@@ -13,8 +13,10 @@ begin
     ENV['RUBYOPT'] = "#{ENV['RUBYOPT']} -I #{File.expand_path('../../lib', here)}"
     exec "#{File.basename(__FILE__)}-#{subcmd}", *ARGV
   end
-rescue Exception => e
+rescue Errno::ENOENT
   puts "No command '#{subcmd}' found"
+  exit 1
+rescue Exception => e
   (p(e); puts e.backtrace) if ARGV.include?('--debug')
   exit 1
 end
