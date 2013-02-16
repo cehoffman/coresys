@@ -30,6 +30,7 @@ module Coresys
         begin
           block_given? && yield || @formula.install
         rescue Exception
+          (puts Dir.pwd; system ENV['SHELL']) if ARGV.include?('--interactive')
           @formula.prefix.rmtree if @formula.prefix.exist?
           raise
         ensure
