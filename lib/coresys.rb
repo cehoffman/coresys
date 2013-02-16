@@ -101,7 +101,7 @@ module Coresys
     def unlink(name)
       formula = Formula.find_or_stub(*name.split('@', 2)).new
       error!("#{formula.name} is not linked") unless formula.linked?
-      linked = (Cellar.linked + formula.name).realpath 
+      linked = (Coresys.linked + formula.name).realpath 
       Linker.new(formula.name, linked.basename, linked).unlink
     end
 
