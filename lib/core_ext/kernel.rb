@@ -66,7 +66,7 @@ module Kernel
 
     unless $?.success?
       args.map! { |arg| arg.gsub(' ', "\\ ")}
-      error!("Running #{cmd} #{args}")
+      error!("Running #{cmd} #{args.join(' ')}: exit #{$?.exitstatus}")
     end
   end
 
