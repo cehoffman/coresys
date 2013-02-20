@@ -69,6 +69,12 @@ module Coresys
           (url_opts && (url_opts.fetch(:tag) || url_opts.fetch(:branch) || url_opts.fetch(:sha)))
       end
 
+      [:md5, :sha1, :sha256].each do |hash|
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{hash}(sum); digest :#{hash}, sum; end
+        RUBY
+      end
+
       def digest(type = nil, sum = nil)
         if type.nil? && sum.nil?
           [@digest_type, @digest_sum]
@@ -159,6 +165,15 @@ module Coresys
 
     def cd(*args, &block)
       Dir.chdir(*args, &block)
+    end
+
+    def mkdir(path, &block)
+      Dir.mkdir path
+      cd path, &block
+    end
+
+    def cp(from, to)
+      safe_system 'cp', from, to
     end
 
     def system(*args)
