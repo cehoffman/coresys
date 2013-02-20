@@ -1,5 +1,7 @@
 module Coresys
   class Installer
+    AbortInstall = Class.new(StandardError)
+
     def initialize(formula)
       @formula = formula
       @downloader = DownloadStrategy.guess(formula)
@@ -45,6 +47,7 @@ module Coresys
     rescue Interrupt => e
       puts
       info 'Aborting install'
+      raise AbortInstall
     end
 
     def mktemp
