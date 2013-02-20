@@ -81,23 +81,35 @@ module Coresys
         @url && @digest_type && @digest_sum
       end
 
+      def options; @options || {}; end
+
       def option(opt, desc)
         @options ||= {}
         @options[opt] = desc
       end
 
+      def option?(test)
+        @build ||= ARGV.map { |k| k[/^--with-(.*)/, 1] }.compact
+        @build.include?(test)
+      end
+
+      def depends_on(formula, req = :required)
+        @deps ||= {}
+        @deps[formula] = req
+      end
+
       def delegate(*methods)
         methods.each do |method|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def #{method}
-              self.class.#{method}
+            def #{method}(*args)
+              self.class.#{method}(*args)
             end
           RUBY
         end
       end
     end
 
-    delegate :url, :url_opts, :version, :digest, :homepage
+    delegate :url, :url_opts, :version, :digest, :homepage, :option?
 
     def name
       self.class.file_name || self.class.name.underscore

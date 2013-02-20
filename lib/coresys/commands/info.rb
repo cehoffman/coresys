@@ -18,3 +18,8 @@ if formula.linked?
   linked = (Coresys.linked + formula.name).realpath
   puts "#{linked} (#{linked.summary})"
 end
+
+section_start "Options"
+formula.class.options.each do |k, v|
+  puts "--with-#{k}", "\t#{v}"
+end
