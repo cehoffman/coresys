@@ -10,6 +10,10 @@ module ENVHelpers
       end
     RUBY
   end
+
+  def cygwin?
+    @cygwin ||= RUBY_PLATFORM =~ /cygwin/
+  end
 end
 
 ENV.extend ENVHelpers
