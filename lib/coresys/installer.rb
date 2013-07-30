@@ -30,7 +30,18 @@ module Coresys
 
         oENV = ENV.to_hash
         begin
+          # Allow packages to find dependencies
+          ENV['PKG_CONFIG_PATH'] = "#{Coresys.base}/lib/pkgconfig"
+
           block_given? && yield || @formula.install
+
+          # Modify any elf files to have the Coresys lib in the runtime
+          # searchpath since install_name_tool doesn't exist on Linux
+          Dir[@formula.prefix + '**/*'].each do |file|
+            next if File.directory?(file)
+            sig = open(file, 'rb') { |f| f.read(4) }
+            system 'patchelf', '--set-rpath', "#{Coresys.base}/lib", file if sig == "\x7fELF"
+          end
         rescue Exception
           (puts Dir.pwd; system ENV['SHELL']) if ARGV.include?('--interactive')
           @formula.prefix.rmtree if @formula.prefix.exist?
